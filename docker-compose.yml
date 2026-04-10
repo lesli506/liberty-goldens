@@ -1,0 +1,37 @@
+services:
+  liberty-goldens:
+    build: .
+    container_name: liberty-goldens
+    restart: unless-stopped
+    env_file:
+      - .env.local
+    volumes:
+      - liberty-data:/app/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.liberty.rule=Host(`libertyenglishcreamgoldenretrievers.com`)"
+      - "traefik.http.routers.liberty.entrypoints=https"
+      - "traefik.http.routers.liberty.tls=true"
+      - "traefik.http.routers.liberty.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.liberty.tls.domains[0].main=libertyenglishcreamgoldenretrievers.com"
+      - "traefik.http.routers.liberty.tls.domains[0].sans=www.libertyenglishcreamgoldenretrievers.com"
+      - "traefik.http.routers.liberty-www.rule=Host(`www.libertyenglishcreamgoldenretrievers.com`)"
+      - "traefik.http.routers.liberty-www.entrypoints=https"
+      - "traefik.http.routers.liberty-www.tls=true"
+      - "traefik.http.routers.liberty-www.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.liberty-www.middlewares=liberty-www-redirect"
+      - "traefik.http.routers.liberty-http.rule=Host(`libertyenglishcreamgoldenretrievers.com`) || Host(`www.libertyenglishcreamgoldenretrievers.com`)"
+      - "traefik.http.routers.liberty-http.entrypoints=http"
+      - "traefik.http.middlewares.liberty-www-redirect.redirectregex.regex=^https?://www\\.libertyenglishcreamgoldenretrievers\\.com/(.*)"
+      - "traefik.http.middlewares.liberty-www-redirect.redirectregex.replacement=https://libertyenglishcreamgoldenretrievers.com/$${1}"
+      - "traefik.http.middlewares.liberty-www-redirect.redirectregex.permanent=true"
+      - "traefik.http.services.liberty.loadbalancer.server.port=3000"
+    networks:
+      - coolify
+
+volumes:
+  liberty-data:
+
+networks:
+  coolify:
+    external: true
