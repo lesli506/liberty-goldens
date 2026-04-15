@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { SITE } from "@/lib/constants";
 import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
 import { ContactForm } from "./form";
+import { getPageContent } from "@/lib/content";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -9,6 +12,8 @@ export const metadata: Metadata = {
 };
 
 export default function ContactPage() {
+  const c = getPageContent("contact");
+
   return (
     <>
       <JsonLd
@@ -21,14 +26,13 @@ export default function ContactPage() {
       <section className="bg-gradient-to-br from-navy via-navy-light to-navy py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <p className="text-gold font-bold text-sm uppercase tracking-widest mb-4">
-            Get in Touch
+            {c.hero_eyebrow || "Get in Touch"}
           </p>
           <h1 className="font-serif text-4xl sm:text-5xl font-bold text-cream mb-6">
-            Contact Us
+            {c.hero_heading || "Contact Us"}
           </h1>
           <p className="text-muted text-lg max-w-2xl mx-auto">
-            Have questions about our puppies or want to schedule a visit? We
-            would love to hear from you.
+            {c.hero_description || "Have questions about our puppies or want to schedule a visit? We would love to hear from you."}
           </p>
         </div>
       </section>

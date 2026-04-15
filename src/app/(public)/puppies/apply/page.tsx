@@ -401,7 +401,7 @@ export default function ApplyPage() {
           {step < STEPS.length - 1 ? (
             <button
               onClick={() => setStep(step + 1)}
-              className="bg-gold text-navy px-8 py-2.5 rounded-full font-bold hover:bg-gold/90 transition-colors"
+              className="bg-gold text-warm-white px-8 py-2.5 rounded-full font-bold hover:bg-gold/90 transition-colors"
             >
               Next
             </button>
@@ -414,7 +414,7 @@ export default function ApplyPage() {
                 !form.acknowledge_deposit ||
                 !form.acknowledge_spay_neuter
               }
-              className="bg-gold text-navy px-8 py-2.5 rounded-full font-bold hover:bg-gold/90 transition-colors disabled:opacity-50"
+              className="bg-gold text-warm-white px-8 py-2.5 rounded-full font-bold hover:bg-gold/90 transition-colors disabled:opacity-50"
             >
               {status === "sending" ? "Submitting..." : "Submit Application"}
             </button>

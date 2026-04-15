@@ -9,7 +9,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-navy/95 backdrop-blur-sm border-b border-white/10">
+    <header className="sticky top-0 z-50 bg-navy/95 backdrop-blur-sm border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo / Brand */}
@@ -32,7 +32,7 @@ export function Header() {
             ))}
             <Link
               href="/puppies/apply"
-              className="bg-gold text-navy px-5 py-2 rounded-full text-sm font-bold hover:bg-gold/90 transition-colors"
+              className="bg-gold text-warm-white px-5 py-2 rounded-full text-sm font-bold hover:bg-gold/90 transition-colors"
             >
               Apply for a Puppy
             </Link>
@@ -56,7 +56,7 @@ export function Header() {
 
         {/* Mobile Nav */}
         {open && (
-          <nav className="lg:hidden pb-6 border-t border-white/10 pt-4">
+          <nav className="lg:hidden pb-6 border-t border-border pt-4">
             <div className="flex flex-col gap-3">
               {NAV_LINKS.map((link) => (
                 <Link
@@ -71,11 +71,11 @@ export function Header() {
               <Link
                 href="/puppies/apply"
                 onClick={() => setOpen(false)}
-                className="bg-gold text-navy px-5 py-2.5 rounded-full text-sm font-bold hover:bg-gold/90 transition-colors text-center mt-2"
+                className="bg-gold text-warm-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-gold/90 transition-colors text-center mt-2"
               >
                 Apply for a Puppy
               </Link>
-              <div className="mt-3 pt-3 border-t border-white/10">
+              <div className="mt-3 pt-3 border-t border-border">
                 <SocialLinks />
               </div>
             </div>

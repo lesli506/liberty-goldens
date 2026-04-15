@@ -138,7 +138,7 @@ export default function StudServicePage() {
             </p>
             <Link
               href="/contact"
-              className="inline-block bg-gold text-navy px-8 py-3.5 rounded-full font-bold text-lg hover:bg-gold/90 transition-colors"
+              className="inline-block bg-gold text-warm-white px-8 py-3.5 rounded-full font-bold text-lg hover:bg-gold/90 transition-colors"
             >
               Contact Us
             </Link>

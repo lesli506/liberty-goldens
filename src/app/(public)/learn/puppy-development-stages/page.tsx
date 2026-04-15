@@ -283,7 +283,7 @@ export default function PuppyDevelopmentPage() {
             </p>
             <Link
               href="/puppies/apply"
-              className="inline-block bg-gold text-navy px-8 py-3.5 rounded-full font-bold text-lg hover:bg-gold/90 transition-colors"
+              className="inline-block bg-gold text-warm-white px-8 py-3.5 rounded-full font-bold text-lg hover:bg-gold/90 transition-colors"
             >
               Apply for a Puppy
             </Link>

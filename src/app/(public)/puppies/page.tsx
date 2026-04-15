@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SITE } from "@/lib/constants";
 import { getDb } from "@/lib/db";
 import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
+import { getPageContent } from "@/lib/content";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,7 @@ const statusColors: Record<string, string> = {
 
 export default function PuppiesPage() {
   const db = getDb();
+  const c = getPageContent("puppies");
   const puppies = db
     .prepare("SELECT * FROM puppies ORDER BY sort_order ASC, id ASC")
     .all() as Puppy[];
@@ -63,15 +65,13 @@ export default function PuppiesPage() {
       <section className="bg-gradient-to-br from-navy via-navy-light to-navy py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <p className="text-gold font-bold text-sm uppercase tracking-widest mb-4">
-            Our Puppies
+            {c.hero_eyebrow || "Our Puppies"}
           </p>
           <h1 className="font-serif text-4xl sm:text-5xl font-bold text-cream mb-6">
-            Available Puppies
+            {c.hero_heading || "Available Puppies"}
           </h1>
           <p className="text-muted text-lg max-w-2xl mx-auto">
-            Our puppies are {SITE.priceRange} and come with OFA health-tested
-            parents, vaccinations, microchip, health guarantee, and lifetime
-            breeder support.
+            {c.hero_description || `Our puppies are ${SITE.priceRange} and come with OFA health-tested parents, vaccinations, microchip, health guarantee, and lifetime breeder support.`}
           </p>
         </div>
       </section>
@@ -132,7 +132,7 @@ export default function PuppiesPage() {
           <div className="text-center">
             <Link
               href="/puppies/apply"
-              className="inline-block bg-gold text-navy px-8 py-3.5 rounded-full font-bold text-lg hover:bg-gold/90 transition-colors"
+              className="inline-block bg-gold text-warm-white px-8 py-3.5 rounded-full font-bold text-lg hover:bg-gold/90 transition-colors"
             >
               Apply for a Puppy
             </Link>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SITE } from "@/lib/constants";
 import { getDb } from "@/lib/db";
 import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
+import { PedigreeChart } from "@/components/pedigree-chart";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,8 @@ interface Dog {
   caer_eyes: string | null;
   genetic_panel: string | null;
   titles: string | null;
+  pedigree_data: string | null;
+  show_pedigree: number;
 }
 
 export default function OurDogsPage() {
@@ -135,6 +138,17 @@ export default function OurDogsPage() {
                         )}
                       </div>
                     </div>
+                    {dog.show_pedigree === 1 && dog.pedigree_data && (() => {
+                      try {
+                        const data = JSON.parse(dog.pedigree_data);
+                        return (
+                          <div className="border-t border-border pt-4">
+                            <h4 className="text-cream font-bold text-sm mb-3">4-Generation Pedigree</h4>
+                            <PedigreeChart data={data} />
+                          </div>
+                        );
+                      } catch { return null; }
+                    })()}
                   </div>
                 </div>
               ))}

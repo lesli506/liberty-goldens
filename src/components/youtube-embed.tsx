@@ -46,7 +46,7 @@ export function YouTubeEmbed({ videoId, title, className }: YouTubeEmbedProps) {
       <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
         <div className="w-16 h-16 md:w-20 md:h-20 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
           <svg
-            className="w-8 h-8 md:w-10 md:h-10 text-navy ml-1"
+            className="w-8 h-8 md:w-10 md:h-10 text-warm-white ml-1"
             fill="currentColor"
             viewBox="0 0 24 24"
           >

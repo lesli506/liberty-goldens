@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
 import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
+import { getPageContent } from "@/lib/content";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -28,6 +31,8 @@ const personSchema = {
 };
 
 export default function AboutPage() {
+  const c = getPageContent("about");
+
   return (
     <>
       <JsonLd
@@ -42,15 +47,13 @@ export default function AboutPage() {
       <section className="bg-gradient-to-br from-navy via-navy-light to-navy py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <p className="text-gold font-bold text-sm uppercase tracking-widest mb-4">
-            Our Story
+            {c.hero_eyebrow || "Our Story"}
           </p>
           <h1 className="font-serif text-4xl sm:text-5xl font-bold text-cream mb-6">
-            About {SITE.name}
+            {c.hero_heading || `About ${SITE.name}`}
           </h1>
           <p className="text-muted text-lg leading-relaxed max-w-2xl mx-auto">
-            A small, family breeding program dedicated to producing healthy,
-            well-tempered English Cream Golden Retrievers with champion European
-            bloodlines.
+            {c.hero_description || "A small, family breeding program dedicated to producing healthy, well-tempered English Cream Golden Retrievers with champion European bloodlines."}
           </p>
         </div>
       </section>
@@ -147,7 +150,7 @@ export default function AboutPage() {
           </p>
           <Link
             href="/puppies/apply"
-            className="inline-block bg-gold text-navy px-8 py-3.5 rounded-full font-bold text-lg hover:bg-gold/90 transition-colors"
+            className="inline-block bg-gold text-warm-white px-8 py-3.5 rounded-full font-bold text-lg hover:bg-gold/90 transition-colors"
           >
             Apply for a Puppy
           </Link>

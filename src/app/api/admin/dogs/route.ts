@@ -8,25 +8,34 @@ function isAuthed(req: NextRequest): boolean {
 export async function GET(req: NextRequest) {
   if (!isAuthed(req)) return NextResponse.json([], { status: 401 });
   const db = getDb();
-  const puppies = db.prepare(
-    `SELECT p.*, l.name as litter_name
-     FROM puppies p
-     LEFT JOIN litters l ON p.litter_id = l.id
-     ORDER BY p.sort_order ASC, p.id ASC`
-  ).all();
-  return NextResponse.json(puppies);
+  const dogs = db.prepare("SELECT * FROM dogs ORDER BY sort_order ASC, id ASC").all();
+  return NextResponse.json(dogs);
 }
 
 export async function POST(req: NextRequest) {
   if (!isAuthed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { name, sex, color, status, litter_id } = await req.json();
+  const { name, registered_name, role, bio, ofa_hips, ofa_elbows, caer_eyes, genetic_panel, titles } = await req.json();
   if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
   const db = getDb();
-  const maxOrder = db.prepare("SELECT COALESCE(MAX(sort_order), 0) + 1 as next FROM puppies").get() as { next: number };
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  const maxOrder = db.prepare("SELECT COALESCE(MAX(sort_order), 0) + 1 as next FROM dogs").get() as { next: number };
   db.prepare(
-    "INSERT INTO puppies (name, sex, color, status, litter_id, sort_order) VALUES (?, ?, ?, ?, ?, ?)"
-  ).run(name, sex || null, color || null, status || "available", litter_id || null, maxOrder.next);
+    `INSERT INTO dogs (name, registered_name, slug, role, bio, ofa_hips, ofa_elbows, caer_eyes, genetic_panel, titles, sort_order)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    name,
+    registered_name || null,
+    slug,
+    role || "dam",
+    bio || null,
+    ofa_hips || null,
+    ofa_elbows || null,
+    caer_eyes || null,
+    genetic_panel || null,
+    titles || null,
+    maxOrder.next
+  );
 
   return NextResponse.json({ success: true });
 }
@@ -37,7 +46,7 @@ export async function PUT(req: NextRequest) {
   if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
 
   const db = getDb();
-  const allowed = ["name", "sex", "color", "status", "litter_id", "sort_order"];
+  const allowed = ["name", "registered_name", "role", "bio", "ofa_hips", "ofa_elbows", "caer_eyes", "genetic_panel", "titles", "is_active", "sort_order", "pedigree_data", "show_pedigree"];
   const updates: string[] = [];
   const values: unknown[] = [];
 
@@ -49,8 +58,15 @@ export async function PUT(req: NextRequest) {
   }
   if (updates.length === 0) return NextResponse.json({ error: "No fields" }, { status: 400 });
 
+  // Update slug if name changed
+  if ("name" in fields) {
+    const slug = (fields.name as string).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    updates.push("slug = ?");
+    values.push(slug);
+  }
+
   values.push(id);
-  db.prepare(`UPDATE puppies SET ${updates.join(", ")} WHERE id = ?`).run(...values);
+  db.prepare(`UPDATE dogs SET ${updates.join(", ")} WHERE id = ?`).run(...values);
   return NextResponse.json({ success: true });
 }
 
@@ -59,6 +75,6 @@ export async function DELETE(req: NextRequest) {
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
   const db = getDb();
-  db.prepare("DELETE FROM puppies WHERE id = ?").run(id);
+  db.prepare("DELETE FROM dogs WHERE id = ?").run(id);
   return NextResponse.json({ success: true });
 }

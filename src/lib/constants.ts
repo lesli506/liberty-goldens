@@ -20,7 +20,7 @@ export const SITE = {
   owner: "Ruth Norlington",
   social: {
     facebook: "https://www.facebook.com/libertyenglishcreamgoldens",
-    instagram: "https://www.instagram.com/libertyenglishcreamgoldens",
+    instagram: "https://www.instagram.com/libertyenglishcream/",
     youtube: "https://www.youtube.com/@libertyenglishcreamgoldens",
     tiktok: "https://www.tiktok.com/@libertyenglishcreamgoldens",
     pinterest: "https://www.pinterest.com/libertyenglishcreamgoldens",

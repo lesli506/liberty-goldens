@@ -8,27 +8,40 @@ function isAuthed(req: NextRequest): boolean {
 export async function GET(req: NextRequest) {
   if (!isAuthed(req)) return NextResponse.json([], { status: 401 });
   const db = getDb();
-  const puppies = db.prepare(
-    `SELECT p.*, l.name as litter_name
-     FROM puppies p
-     LEFT JOIN litters l ON p.litter_id = l.id
-     ORDER BY p.sort_order ASC, p.id ASC`
+  const litters = db.prepare(
+    `SELECT l.*,
+       s.name as sire_name,
+       d.name as dam_name,
+       (SELECT COUNT(*) FROM puppies p WHERE p.litter_id = l.id) as actual_puppy_count
+     FROM litters l
+     LEFT JOIN dogs s ON l.sire_id = s.id
+     LEFT JOIN dogs d ON l.dam_id = d.id
+     ORDER BY l.created_at DESC`
   ).all();
-  return NextResponse.json(puppies);
+  return NextResponse.json(litters);
 }
 
 export async function POST(req: NextRequest) {
   if (!isAuthed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { name, sex, color, status, litter_id } = await req.json();
+  const { name, sire_id, dam_id, birth_date, expected_date, status, puppy_count, notes } = await req.json();
   if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
   const db = getDb();
-  const maxOrder = db.prepare("SELECT COALESCE(MAX(sort_order), 0) + 1 as next FROM puppies").get() as { next: number };
-  db.prepare(
-    "INSERT INTO puppies (name, sex, color, status, litter_id, sort_order) VALUES (?, ?, ?, ?, ?, ?)"
-  ).run(name, sex || null, color || null, status || "available", litter_id || null, maxOrder.next);
+  const result = db.prepare(
+    `INSERT INTO litters (name, sire_id, dam_id, birth_date, expected_date, status, puppy_count, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    name,
+    sire_id || null,
+    dam_id || null,
+    birth_date || null,
+    expected_date || null,
+    status || "planned",
+    puppy_count || 0,
+    notes || null
+  );
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, id: result.lastInsertRowid });
 }
 
 export async function PUT(req: NextRequest) {
@@ -37,20 +50,20 @@ export async function PUT(req: NextRequest) {
   if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
 
   const db = getDb();
-  const allowed = ["name", "sex", "color", "status", "litter_id", "sort_order"];
+  const allowed = ["name", "sire_id", "dam_id", "birth_date", "expected_date", "status", "puppy_count", "notes"];
   const updates: string[] = [];
   const values: unknown[] = [];
 
   for (const key of allowed) {
     if (key in fields) {
       updates.push(`${key} = ?`);
-      values.push(fields[key]);
+      values.push(fields[key] ?? null);
     }
   }
   if (updates.length === 0) return NextResponse.json({ error: "No fields" }, { status: 400 });
 
   values.push(id);
-  db.prepare(`UPDATE puppies SET ${updates.join(", ")} WHERE id = ?`).run(...values);
+  db.prepare(`UPDATE litters SET ${updates.join(", ")} WHERE id = ?`).run(...values);
   return NextResponse.json({ success: true });
 }
 
@@ -58,7 +71,11 @@ export async function DELETE(req: NextRequest) {
   if (!isAuthed(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await req.json();
   if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+
   const db = getDb();
-  db.prepare("DELETE FROM puppies WHERE id = ?").run(id);
+  // Unlink puppies from this litter before deleting
+  db.prepare("UPDATE puppies SET litter_id = NULL WHERE litter_id = ?").run(id);
+  db.prepare("DELETE FROM waitlist WHERE litter_id = ?").run(id);
+  db.prepare("DELETE FROM litters WHERE id = ?").run(id);
   return NextResponse.json({ success: true });
 }

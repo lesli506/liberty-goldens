@@ -1,6 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { SITE } from "@/lib/constants";
+import { getPageContent } from "@/lib/content";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "English Cream Golden Retriever Puppies in Indiana",
@@ -8,45 +11,91 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
+  const c = getPageContent("home");
+
+  const headingParts = (c.hero_heading || "Put a Little Love\nin Your Life").split("\n");
+
   return (
     <>
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-navy via-navy-light to-navy" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-32 text-center">
-          <p className="text-gold font-bold text-sm uppercase tracking-widest mb-4">
-            Knox, Indiana &middot; Good Dog Certified
-          </p>
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-cream leading-[1.1] mb-6">
-            Put a Little Love
-            <br />
-            <span className="text-gold">in Your Life</span>
-          </h1>
-          <p className="text-muted text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Champion-sired English Cream Golden Retriever puppies, raised in our
-            home with early neurological stimulation, daily socialization, and
-            lifetime breeder support. OFA health tested parents. Flight nanny
-            available worldwide.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/puppies/apply"
-              className="bg-gold text-navy px-8 py-3.5 rounded-full font-bold text-lg hover:bg-gold/90 transition-colors shadow-lg"
-            >
-              Apply for a Puppy
-            </Link>
-            <Link
-              href="/videos"
-              className="border-2 border-cream/30 text-cream px-8 py-3.5 rounded-full font-bold text-lg hover:border-gold hover:text-gold transition-colors"
-            >
-              Watch Our Videos
-            </Link>
+      {/* Hero -- split layout with photo */}
+      <section className="bg-navy-light">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Text */}
+            <div>
+              <p className="text-gold font-bold text-sm uppercase tracking-widest mb-4">
+                {c.hero_eyebrow || "Knox, Indiana · Good Dog Certified"}
+              </p>
+              <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold text-cream leading-[1.1] mb-6">
+                {headingParts[0]}
+                {headingParts[1] && (
+                  <>
+                    <br />
+                    <span className="text-gold">{headingParts[1]}</span>
+                  </>
+                )}
+              </h1>
+              <p className="text-muted text-lg max-w-xl mb-10 leading-relaxed">
+                {c.hero_description || SITE.description}
+              </p>
+              <div className="flex flex-col sm:flex-row items-start gap-4">
+                <Link
+                  href="/puppies/apply"
+                  className="bg-gold text-warm-white px-8 py-3.5 rounded-full font-bold text-lg hover:opacity-90 transition-opacity shadow-md"
+                >
+                  Apply for a Puppy
+                </Link>
+                <Link
+                  href="/gallery"
+                  className="border-2 border-gold text-gold px-8 py-3.5 rounded-full font-bold text-lg hover:bg-gold hover:text-warm-white transition-colors"
+                >
+                  View Gallery
+                </Link>
+              </div>
+            </div>
+            {/* Photo */}
+            <div className="relative">
+              <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src="/photos/Belle.jpg"
+                  alt="Liberty English Cream Golden Retriever"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Floating badge */}
+              <div className="absolute -bottom-4 -left-4 bg-warm-white rounded-2xl shadow-xl p-4 border border-border">
+                <p className="font-serif text-sm font-bold text-cream">OFA Health Tested</p>
+                <p className="text-muted text-xs">Hips &middot; Elbows &middot; Eyes &middot; Genetics</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Photo strip */}
+      <section className="bg-navy py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-4 gap-3">
+            {[
+              { src: "/photos/Sammy.jpg", alt: "Sammy our stud" },
+              { src: "/photos/Boone.jpg", alt: "Boone" },
+              { src: "/photos/Indigo.jpeg", alt: "Indigo" },
+              { src: "/photos/Photoroom_20240709_230653.jpeg", alt: "Liberty Goldens puppy" },
+            ].map((photo) => (
+              <div key={photo.src} className="aspect-square rounded-xl overflow-hidden">
+                <img
+                  src={photo.src}
+                  alt={photo.alt}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Why Liberty */}
-      <section className="bg-navy-light py-16 sm:py-24">
+      <section className="bg-navy py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-cream mb-4">
@@ -77,7 +126,7 @@ export default function HomePage() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="bg-card border border-border rounded-2xl p-8 text-center hover:border-gold/30 transition-colors"
+                className="bg-card border border-border rounded-2xl p-8 text-center hover:shadow-lg transition-shadow"
               >
                 <div
                   className="text-gold text-3xl mb-4"
@@ -96,7 +145,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 sm:py-24">
+      <section className="bg-navy-light py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-cream mb-4">
             Ready to Welcome a Golden Into Your Family?
@@ -109,13 +158,13 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/puppies/apply"
-              className="bg-gold text-navy px-8 py-3.5 rounded-full font-bold text-lg hover:bg-gold/90 transition-colors"
+              className="bg-gold text-warm-white px-8 py-3.5 rounded-full font-bold text-lg hover:opacity-90 transition-opacity"
             >
               Start Your Application
             </Link>
             <a
               href={`tel:${SITE.phone}`}
-              className="text-cream hover:text-gold transition-colors font-medium"
+              className="text-muted hover:text-gold transition-colors font-medium"
             >
               or call {SITE.phone}
             </a>
@@ -124,7 +173,7 @@ export default function HomePage() {
       </section>
 
       {/* Learn */}
-      <section className="bg-navy-light py-16 sm:py-24">
+      <section className="bg-navy py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-cream mb-4">
@@ -165,7 +214,7 @@ export default function HomePage() {
               <Link
                 key={article.href}
                 href={article.href}
-                className="bg-card border border-border rounded-xl p-5 hover:border-gold/30 transition-colors group"
+                className="bg-card border border-border rounded-xl p-5 hover:shadow-md hover:border-gold transition-all group"
               >
                 <h3 className="text-cream font-bold group-hover:text-gold transition-colors">
                   {article.title}

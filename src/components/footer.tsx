@@ -4,7 +4,7 @@ import { SocialLinks } from "./social-links";
 
 export function Footer() {
   return (
-    <footer className="bg-navy border-t border-white/10">
+    <footer className="bg-navy border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Brand */}
@@ -79,7 +79,7 @@ export function Footer() {
                 </span>
               </li>
             </ul>
-            <div className="mt-4 pt-4 border-t border-white/10">
+            <div className="mt-4 pt-4 border-t border-border">
               <a
                 href={SITE.social.gooddog}
                 target="_blank"
@@ -92,7 +92,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-white/10 text-center text-muted text-xs">
+        <div className="mt-10 pt-6 border-t border-border text-center text-muted text-xs">
           &copy; {new Date().getFullYear()} {SITE.name}. All rights reserved.
         </div>
       </div>
