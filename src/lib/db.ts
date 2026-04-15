@@ -112,6 +112,26 @@ export function getDb(): Database.Database {
       created_at TEXT DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS subscribers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL UNIQUE,
+      name TEXT,
+      source TEXT DEFAULT 'manual',
+      unsubscribe_token TEXT UNIQUE,
+      is_subscribed INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS broadcasts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      subject TEXT NOT NULL,
+      body_html TEXT NOT NULL,
+      status TEXT DEFAULT 'draft',
+      recipient_count INTEGER DEFAULT 0,
+      sent_at TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS inquiries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       type TEXT,

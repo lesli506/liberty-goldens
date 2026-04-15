@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-type Tab = "dogs" | "litters" | "puppies" | "waitlist" | "inquiries" | "photos" | "videos" | "content";
+type Tab = "dogs" | "litters" | "puppies" | "waitlist" | "inquiries" | "email" | "photos" | "videos" | "content";
 
 interface Video {
   id: number;
@@ -105,6 +105,25 @@ interface WaitlistEntry {
   created_at: string;
 }
 
+interface Subscriber {
+  id: number;
+  email: string;
+  name: string | null;
+  source: string;
+  is_subscribed: number;
+  created_at: string;
+}
+
+interface Broadcast {
+  id: number;
+  subject: string;
+  body_html: string;
+  status: string;
+  recipient_count: number;
+  sent_at: string | null;
+  created_at: string;
+}
+
 interface ContentBlock {
   id: number;
   page_slug: string;
@@ -122,6 +141,7 @@ const TAB_LABELS: Record<Tab, string> = {
   puppies: "Puppies",
   waitlist: "Waitlist",
   inquiries: "Inquiries",
+  email: "Email",
   photos: "Photos",
   videos: "Videos",
 };
@@ -181,6 +201,7 @@ export default function AdminDashboard() {
       {tab === "puppies" && <PuppiesTab />}
       {tab === "waitlist" && <WaitlistTab />}
       {tab === "inquiries" && <InquiriesTab />}
+      {tab === "email" && <EmailTab />}
       {tab === "photos" && <PhotosTab />}
       {tab === "videos" && <VideosTab />}
     </div>
@@ -766,6 +787,241 @@ function WaitlistTab() {
         ))}
         {entries.length === 0 && <p className="text-muted text-sm">No one on the waitlist yet.</p>}
       </div>
+    </div>
+  );
+}
+
+/* ============ EMAIL TAB ============ */
+function EmailTab() {
+  const [view, setView] = useState<"compose" | "subscribers" | "history">("compose");
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendResult, setSendResult] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState("");
+  const [newName, setNewName] = useState("");
+
+  const load = useCallback(async () => {
+    const [subRes, bcRes] = await Promise.all([
+      fetch("/api/admin/subscribers"),
+      fetch("/api/admin/broadcasts"),
+    ]);
+    setSubscribers(await subRes.json());
+    setBroadcasts(await bcRes.json());
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const activeCount = subscribers.filter((s) => s.is_subscribed).length;
+
+  async function sendBroadcast() {
+    if (!subject.trim() || !body.trim()) return;
+    if (!confirm(`Send this email to ${activeCount} subscribers?`)) return;
+
+    setSending(true);
+    setSendResult(null);
+
+    // Create draft first
+    const createRes = await fetch("/api/admin/broadcasts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subject, body_html: body }),
+    });
+    const { id } = await createRes.json();
+
+    // Send it
+    const sendRes = await fetch("/api/admin/broadcasts", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, action: "send" }),
+    });
+    const result = await sendRes.json();
+
+    setSending(false);
+    if (result.success) {
+      setSendResult(`Sent to ${result.sent} subscribers`);
+      setSubject("");
+      setBody("");
+      load();
+    } else {
+      setSendResult(`Error: ${result.error}`);
+    }
+  }
+
+  async function addSubscriber() {
+    if (!newEmail.trim()) return;
+    await fetch("/api/admin/subscribers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: newEmail, name: newName || null, source: "manual" }),
+    });
+    setNewEmail("");
+    setNewName("");
+    load();
+  }
+
+  async function removeSubscriber(id: number) {
+    if (!confirm("Remove this subscriber?")) return;
+    await fetch("/api/admin/subscribers", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    load();
+  }
+
+  async function deleteBroadcast(id: number) {
+    if (!confirm("Delete this broadcast?")) return;
+    await fetch("/api/admin/broadcasts", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    load();
+  }
+
+  return (
+    <div>
+      {/* Sub-nav */}
+      <div className="flex gap-2 mb-6">
+        {(["compose", "subscribers", "history"] as const).map((v) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={`${btnClass} ${view === v ? "bg-gold text-warm-white" : "bg-card border border-border text-muted"}`}
+          >
+            {v === "compose" ? "Compose" : v === "subscribers" ? `Subscribers (${activeCount})` : `History (${broadcasts.length})`}
+          </button>
+        ))}
+      </div>
+
+      {/* Compose view */}
+      {view === "compose" && (
+        <div className="space-y-4">
+          <p className="text-muted text-sm">
+            Send an email to all {activeCount} active subscribers. Each email includes a personalized greeting and unsubscribe link.
+          </p>
+          <div>
+            <label className="text-xs text-muted font-bold block mb-1">Subject</label>
+            <input
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="e.g., New Litter Announcement!"
+              className={`${inputClass} w-full`}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted font-bold block mb-1">Body (HTML supported)</label>
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Write your email here. You can use basic HTML for formatting."
+              rows={10}
+              className={`${inputClass} w-full`}
+            />
+          </div>
+          {body && (
+            <div>
+              <label className="text-xs text-muted font-bold block mb-2">Preview</label>
+              <div
+                className="bg-warm-white text-cream rounded-lg p-6 border border-border"
+                style={{ fontFamily: "-apple-system, sans-serif", maxWidth: 600 }}
+                dangerouslySetInnerHTML={{ __html: `<p style="color:#333">Hi [Name],</p>${body}` }}
+              />
+            </div>
+          )}
+          <div className="flex gap-3 items-center">
+            <button
+              onClick={sendBroadcast}
+              disabled={sending || !subject.trim() || !body.trim() || activeCount === 0}
+              className={`${btnClass} bg-gold text-warm-white disabled:opacity-50 px-6 py-2`}
+            >
+              {sending ? "Sending..." : `Send to ${activeCount} Subscribers`}
+            </button>
+            {sendResult && (
+              <span className={`text-sm ${sendResult.startsWith("Error") ? "text-red-400" : "text-green-400"}`}>
+                {sendResult}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Subscribers view */}
+      {view === "subscribers" && (
+        <div>
+          <div className="flex flex-wrap gap-2 mb-4 items-end">
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Name (optional)"
+              className={inputClass}
+            />
+            <input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="Email address"
+              className={inputClass}
+            />
+            <button onClick={addSubscriber} className={`${btnClass} bg-gold text-warm-white`}>
+              Add Subscriber
+            </button>
+          </div>
+          <p className="text-muted text-xs mb-3">
+            {activeCount} active, {subscribers.length - activeCount} unsubscribed. Subscribers are auto-added from contact and application forms.
+          </p>
+          <div className="space-y-2">
+            {subscribers.map((s) => (
+              <div key={s.id} className={`bg-card border border-border rounded-lg p-3 flex flex-wrap gap-3 items-center ${!s.is_subscribed ? "opacity-50" : ""}`}>
+                <span className="text-cream font-bold flex-1 min-w-[200px]">
+                  {s.email}
+                  {s.name && <span className="text-muted text-sm ml-2">({s.name})</span>}
+                </span>
+                <span className="text-xs text-muted">{s.source}</span>
+                <span className={`text-xs px-2 py-0.5 rounded ${s.is_subscribed ? "bg-green-900/50 text-green-300" : "bg-red-900/50 text-red-300"}`}>
+                  {s.is_subscribed ? "Active" : "Unsubscribed"}
+                </span>
+                <span className="text-xs text-muted">{new Date(s.created_at).toLocaleDateString()}</span>
+                <button onClick={() => removeSubscriber(s.id)} className="text-xs text-red-400 hover:text-red-300">Remove</button>
+              </div>
+            ))}
+            {subscribers.length === 0 && (
+              <p className="text-muted text-sm">No subscribers yet. They are added automatically when someone submits a contact or puppy application form.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* History view */}
+      {view === "history" && (
+        <div className="space-y-3">
+          {broadcasts.map((b) => (
+            <div key={b.id} className="bg-card border border-border rounded-lg p-4">
+              <div className="flex flex-wrap gap-3 items-center justify-between">
+                <div>
+                  <span className="text-cream font-bold">{b.subject}</span>
+                  <div className="flex gap-3 mt-1 text-xs text-muted">
+                    <span className={`px-2 py-0.5 rounded ${b.status === "sent" ? "bg-green-900/50 text-green-300" : "bg-yellow-900/50 text-yellow-300"}`}>
+                      {b.status === "sent" ? "Sent" : "Draft"}
+                    </span>
+                    {b.recipient_count > 0 && <span>Sent to {b.recipient_count}</span>}
+                    {b.sent_at && <span>{new Date(b.sent_at).toLocaleString()}</span>}
+                  </div>
+                </div>
+                <button onClick={() => deleteBroadcast(b.id)} className={`${btnClass} bg-red-900/50 text-red-300`}>Delete</button>
+              </div>
+            </div>
+          ))}
+          {broadcasts.length === 0 && (
+            <p className="text-muted text-sm">No broadcasts sent yet.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

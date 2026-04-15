@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { sendToRuth } from "@/lib/email";
+import { addSubscriber } from "@/lib/subscribe";
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,6 +41,9 @@ export async function POST(req: NextRequest) {
       `INSERT INTO inquiries (type, name, email, phone, message, ip_address)
        VALUES ('contact', ?, ?, ?, ?, ?)`
     ).run(name, email, phone || null, message, ip);
+
+    // Auto-subscribe to email list
+    addSubscriber(email, name, "contact_form");
 
     await sendToRuth({
       subject: `New Contact Form -- ${name}`,

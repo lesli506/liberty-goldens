@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { sendToRuth } from "@/lib/email";
+import { addSubscriber } from "@/lib/subscribe";
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,6 +42,9 @@ export async function POST(req: NextRequest) {
       `INSERT INTO inquiries (type, name, email, phone, form_data, ip_address)
        VALUES ('application', ?, ?, ?, ?, ?)`
     ).run(name, email, phone, JSON.stringify(data), ip);
+
+    // Auto-subscribe to email list
+    addSubscriber(email, name, "application");
 
     const h = escapeHtml;
 
