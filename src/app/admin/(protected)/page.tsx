@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-type Tab = "dogs" | "litters" | "puppies" | "waitlist" | "inquiries" | "email" | "photos" | "videos" | "content";
+type Tab = "dogs" | "litters" | "puppies" | "waitlist" | "inquiries" | "email" | "blog" | "photos" | "videos" | "content";
 
 interface Video {
   id: number;
@@ -142,6 +142,7 @@ const TAB_LABELS: Record<Tab, string> = {
   waitlist: "Waitlist",
   inquiries: "Inquiries",
   email: "Email",
+  blog: "Blog",
   photos: "Photos",
   videos: "Videos",
 };
@@ -202,6 +203,7 @@ export default function AdminDashboard() {
       {tab === "waitlist" && <WaitlistTab />}
       {tab === "inquiries" && <InquiriesTab />}
       {tab === "email" && <EmailTab />}
+      {tab === "blog" && <BlogTab />}
       {tab === "photos" && <PhotosTab />}
       {tab === "videos" && <VideosTab />}
     </div>
@@ -2017,6 +2019,226 @@ function InquiriesTab() {
         })}
         {filtered.length === 0 && (
           <p className="text-muted text-sm">{filter === "all" ? "No inquiries yet." : `No ${STATUS_LABELS[filter]?.toLowerCase()} inquiries.`}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ============ BLOG TAB ============ */
+interface BlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body: string;
+  featured_image: string | null;
+  status: string;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+function BlogTab() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ title: "", excerpt: "", body: "", status: "draft" });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    const res = await fetch("/api/admin/blog");
+    const data = await res.json();
+    setPosts(data);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function createPost() {
+    if (!form.title.trim()) return;
+    setSaving(true);
+    const res = await fetch("/api/admin/blog", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    const data = await res.json();
+    if (data.error) {
+      alert(data.error);
+    } else {
+      setForm({ title: "", excerpt: "", body: "", status: "draft" });
+      setCreating(false);
+      load();
+    }
+    setSaving(false);
+  }
+
+  async function updatePost(id: number, fields: Partial<BlogPost>) {
+    setSaving(true);
+    await fetch("/api/admin/blog", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...fields }),
+    });
+    load();
+    setSaving(false);
+  }
+
+  async function deletePost(id: number) {
+    if (!confirm("Delete this blog post?")) return;
+    await fetch("/api/admin/blog", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    load();
+  }
+
+  function startEdit(post: BlogPost) {
+    setEditing(post.id);
+    setForm({ title: post.title, excerpt: post.excerpt || "", body: post.body || "", status: post.status });
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-cream font-serif">Blog Posts</h2>
+        <button
+          onClick={() => { setCreating(!creating); setEditing(null); setForm({ title: "", excerpt: "", body: "", status: "draft" }); }}
+          className={`${btnClass} ${creating ? "bg-red-600 text-white" : "bg-gold text-warm-white"}`}
+        >
+          {creating ? "Cancel" : "+ New Post"}
+        </button>
+      </div>
+
+      {/* Create/Edit form */}
+      {(creating || editing) && (
+        <div className="bg-card border border-border rounded-xl p-6 mb-6 space-y-4">
+          <div>
+            <label className="text-xs text-muted font-bold block mb-1">Title</label>
+            <input
+              className={`${inputClass} w-full`}
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="Post title"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted font-bold block mb-1">Excerpt (shows on blog index)</label>
+            <textarea
+              className={`${inputClass} w-full`}
+              rows={2}
+              value={form.excerpt}
+              onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
+              placeholder="Short summary"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted font-bold block mb-1">Body (HTML)</label>
+            <textarea
+              className={`${inputClass} w-full font-mono text-xs`}
+              rows={16}
+              value={form.body}
+              onChange={(e) => setForm({ ...form, body: e.target.value })}
+              placeholder="<h2>Section heading</h2><p>Write your blog post here...</p>"
+            />
+          </div>
+          <div className="flex items-center gap-4">
+            <select
+              className={inputClass}
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value })}
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+            <button
+              onClick={() => {
+                if (editing) {
+                  updatePost(editing, form);
+                  setEditing(null);
+                } else {
+                  createPost();
+                }
+              }}
+              disabled={saving || !form.title.trim()}
+              className={`${btnClass} bg-gold text-warm-white disabled:opacity-50`}
+            >
+              {saving ? "Saving..." : editing ? "Update Post" : "Create Post"}
+            </button>
+            {editing && (
+              <button
+                onClick={() => { setEditing(null); setForm({ title: "", excerpt: "", body: "", status: "draft" }); }}
+                className={`${btnClass} bg-card border border-border text-muted`}
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Post list */}
+      <div className="space-y-3">
+        {posts.map((post) => (
+          <div key={post.id} className="bg-card border border-border rounded-xl p-5 flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span
+                  className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                    post.status === "published"
+                      ? "bg-green-900/30 text-green-400"
+                      : "bg-yellow-900/30 text-yellow-400"
+                  }`}
+                >
+                  {post.status}
+                </span>
+                {post.published_at && (
+                  <span className="text-xs text-muted">
+                    {new Date(post.published_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+              <h3 className="font-bold text-cream truncate">{post.title}</h3>
+              {post.excerpt && (
+                <p className="text-muted text-xs mt-1 line-clamp-2">{post.excerpt}</p>
+              )}
+              <p className="text-xs text-muted mt-1">/blog/{post.slug}</p>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              {post.status === "draft" && (
+                <button
+                  onClick={() => updatePost(post.id, { status: "published" })}
+                  className={`${btnClass} bg-green-700 text-white`}
+                >
+                  Publish
+                </button>
+              )}
+              {post.status === "published" && (
+                <button
+                  onClick={() => updatePost(post.id, { status: "draft" })}
+                  className={`${btnClass} bg-yellow-700 text-white`}
+                >
+                  Unpublish
+                </button>
+              )}
+              <button
+                onClick={() => startEdit(post)}
+                className={`${btnClass} bg-card border border-gold text-gold`}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => deletePost(post.id)}
+                className={`${btnClass} bg-red-900/30 text-red-400`}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+        {posts.length === 0 && !creating && (
+          <p className="text-muted text-sm">No blog posts yet. Click &quot;+ New Post&quot; to create one.</p>
         )}
       </div>
     </div>

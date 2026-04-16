@@ -41,6 +41,7 @@ export const NAV_LINKS = [
   { label: "Our Dogs", href: "/our-dogs" },
   { label: "Puppies", href: "/puppies" },
   { label: "Videos", href: "/videos" },
+  { label: "Blog", href: "/blog" },
   { label: "Learn", href: "/learn" },
   { label: "Contact", href: "/contact" },
 ];

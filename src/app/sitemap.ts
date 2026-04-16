@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { LOCATIONS } from "@/lib/locations";
+import { getDb } from "@/lib/db";
 
 const BASE = "https://libertyenglishcreamgoldenretrievers.com";
 
@@ -23,6 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: "/learn/puppy-development-stages", changeFrequency: "monthly" as const, priority: 0.6 },
     { url: "/learn/preparing-for-your-puppy", changeFrequency: "monthly" as const, priority: 0.6 },
     { url: "/learn/flight-nanny-shipping", changeFrequency: "monthly" as const, priority: 0.6 },
+    { url: "/blog", changeFrequency: "weekly" as const, priority: 0.8 },
     // Location index
     { url: "/english-cream-golden-retriever-puppies-in", changeFrequency: "monthly" as const, priority: 0.7 },
   ];
@@ -34,7 +36,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...pages, ...locationPages].map((p) => ({
+  // Blog posts
+  let blogPages: { url: string; changeFrequency: "weekly"; priority: number }[] = [];
+  try {
+    const db = getDb();
+    const posts = db
+      .prepare("SELECT slug FROM blog_posts WHERE status = 'published' ORDER BY published_at DESC")
+      .all() as { slug: string }[];
+    blogPages = posts.map((p) => ({
+      url: `/blog/${p.slug}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+  } catch {
+    // DB not available during build -- skip
+  }
+
+  return [...pages, ...locationPages, ...blogPages].map((p) => ({
     url: `${BASE}${p.url}`,
     lastModified: new Date(),
     changeFrequency: p.changeFrequency,
