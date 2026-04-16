@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { LOCATIONS } from "@/lib/locations";
 
 const BASE = "https://libertyenglishcreamgoldenretrievers.com";
 
@@ -22,9 +23,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: "/learn/puppy-development-stages", changeFrequency: "monthly" as const, priority: 0.6 },
     { url: "/learn/preparing-for-your-puppy", changeFrequency: "monthly" as const, priority: 0.6 },
     { url: "/learn/flight-nanny-shipping", changeFrequency: "monthly" as const, priority: 0.6 },
+    // Location index
+    { url: "/english-cream-golden-retriever-puppies-in", changeFrequency: "monthly" as const, priority: 0.7 },
   ];
 
-  return pages.map((p) => ({
+  // Location pages
+  const locationPages = LOCATIONS.map((loc) => ({
+    url: `/english-cream-golden-retriever-puppies-in/${loc.stateSlug}/${loc.slug}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  return [...pages, ...locationPages].map((p) => ({
     url: `${BASE}${p.url}`,
     lastModified: new Date(),
     changeFrequency: p.changeFrequency,
