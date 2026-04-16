@@ -212,8 +212,36 @@ export default async function LocationPage({ params }: Props) {
         </div>
       </section>
 
+      {/* Map */}
+      <section className="bg-navy-light py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="rounded-2xl overflow-hidden border border-border">
+            <iframe
+              src={SITE.gbp.embedUrl}
+              width="100%"
+              height="300"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title={`Liberty English Cream Goldens -- Knox, Indiana (serving ${loc.city})`}
+            />
+          </div>
+          <p className="text-center mt-4">
+            <a
+              href={SITE.gbp.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gold text-sm font-bold hover:underline"
+            >
+              View on Google Maps &rarr;
+            </a>
+          </p>
+        </div>
+      </section>
+
       {/* Why Liberty */}
-      <section className="bg-navy-light py-16 sm:py-24">
+      <section className="bg-navy-light pt-4 pb-16 sm:pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <h2 className="font-serif text-3xl font-bold text-cream mb-4 text-center">
             Why {loc.city} Families Choose Liberty Goldens

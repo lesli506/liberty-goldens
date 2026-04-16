@@ -87,6 +87,30 @@ export default function ContactPage() {
                   </li>
                 </ul>
               </div>
+
+              {/* Google Map */}
+              <div className="bg-card border border-border rounded-2xl overflow-hidden">
+                <iframe
+                  src={SITE.gbp.embedUrl}
+                  width="100%"
+                  height="280"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Liberty English Cream Goldens on Google Maps"
+                />
+                <div className="p-4 text-center">
+                  <a
+                    href={SITE.gbp.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gold text-sm font-bold hover:underline"
+                  >
+                    View on Google Maps &rarr;
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
