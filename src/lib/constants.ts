@@ -21,7 +21,7 @@ export const SITE = {
   social: {
     facebook: "https://www.facebook.com/libertyenglishcreamgoldens",
     instagram: "https://www.instagram.com/libertyenglishcream/",
-    youtube: "https://www.youtube.com/@libertyenglishcreamgoldens",
+    youtube: "https://www.youtube.com/channel/UCucreGAYGdrcjRwqmqlGuuQ",
     tiktok: "https://www.tiktok.com/@libertyenglishcreamgoldens",
     pinterest: "https://www.pinterest.com/libertyenglishcreamgoldens",
     gooddog:
