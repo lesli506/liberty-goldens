@@ -3,8 +3,9 @@
 import { useState } from "react";
 
 export function ContactForm() {
-  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "", website: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [loadedAt] = useState(() => Date.now());
 
   const set = (key: string, val: string) => setForm((f) => ({ ...f, [key]: val }));
 
@@ -15,14 +16,14 @@ export function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, _t: Date.now() - loadedAt }),
       });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "Failed to send");
       }
       setStatus("sent");
-      setForm({ name: "", email: "", phone: "", message: "" });
+      setForm({ name: "", email: "", phone: "", message: "", website: "" });
     } catch {
       setStatus("error");
     }
@@ -43,6 +44,19 @@ export function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Honeypot -- hidden from humans, bots fill it in */}
+      <div className="absolute opacity-0 -z-10 h-0 overflow-hidden" aria-hidden="true" tabIndex={-1}>
+        <label htmlFor="website">Website</label>
+        <input
+          id="website"
+          name="website"
+          type="text"
+          value={form.website}
+          onChange={(e) => set("website", e.target.value)}
+          autoComplete="off"
+          tabIndex={-1}
+        />
+      </div>
       <div>
         <label className="block text-sm font-bold text-cream mb-1">Name *</label>
         <input

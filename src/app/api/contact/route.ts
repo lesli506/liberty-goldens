@@ -5,13 +5,29 @@ import { addSubscriber } from "@/lib/subscribe";
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, phone, message } = await req.json();
+    const { name, email, phone, message, website, _t } = await req.json();
+
+    // Honeypot -- bots fill this in, humans never see it
+    if (website) {
+      return NextResponse.json({ success: true });
+    }
+
+    // Timing -- reject submissions under 3 seconds
+    if (typeof _t === "number" && _t < 3000) {
+      return NextResponse.json({ success: true });
+    }
 
     if (!name || !email || !message) {
       return NextResponse.json(
         { error: "Name, email, and message are required." },
         { status: 400 }
       );
+    }
+
+    // Gibberish name detection -- reject if mostly consonants with no vowels
+    const vowelRatio = (name.match(/[aeiouAEIOU]/g) || []).length / name.replace(/\s/g, "").length;
+    if (name.length > 5 && vowelRatio < 0.15) {
+      return NextResponse.json({ success: true });
     }
 
     const ip =

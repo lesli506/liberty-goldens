@@ -6,13 +6,29 @@ import { addSubscriber } from "@/lib/subscribe";
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
-    const { name, email, phone } = data;
+    const { name, email, phone, website, _t } = data;
+
+    // Honeypot
+    if (website) {
+      return NextResponse.json({ success: true });
+    }
+
+    // Timing check
+    if (typeof _t === "number" && _t < 3000) {
+      return NextResponse.json({ success: true });
+    }
 
     if (!name || !email || !phone) {
       return NextResponse.json(
         { error: "Name, email, and phone are required." },
         { status: 400 }
       );
+    }
+
+    // Gibberish name detection
+    const vowelRatio = (name.match(/[aeiouAEIOU]/g) || []).length / name.replace(/\s/g, "").length;
+    if (name.length > 5 && vowelRatio < 0.15) {
+      return NextResponse.json({ success: true });
     }
 
     const ip =

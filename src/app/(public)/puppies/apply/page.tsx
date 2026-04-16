@@ -57,6 +57,8 @@ const initial: FormData = {
 export default function ApplyPage() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(initial);
+  const [honeypot, setHoneypot] = useState("");
+  const [loadedAt] = useState(() => Date.now());
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle"
   );
@@ -74,7 +76,7 @@ export default function ApplyPage() {
       const res = await fetch("/api/apply", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, website: honeypot, _t: Date.now() - loadedAt }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -127,6 +129,12 @@ export default function ApplyPage() {
               }`}
             />
           ))}
+        </div>
+
+        {/* Honeypot */}
+        <div className="absolute opacity-0 -z-10 h-0 overflow-hidden" aria-hidden="true" tabIndex={-1}>
+          <label htmlFor="website">Website</label>
+          <input id="website" name="website" type="text" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} autoComplete="off" tabIndex={-1} />
         </div>
 
         <div className="space-y-5">
