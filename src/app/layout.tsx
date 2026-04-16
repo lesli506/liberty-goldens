@@ -50,6 +50,7 @@ export default function RootLayout({
             __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-QQTWRWV1DR');`,
           }}
         />
+        <meta name="google-site-verification" content="6w-6e3eN8kdI0JmnjgUZcr0klovFYn6AR1ciAB2QMDE" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
