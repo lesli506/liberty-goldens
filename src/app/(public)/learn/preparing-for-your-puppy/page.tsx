@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
 import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
+import { ShareButtons } from "@/components/share-buttons";
 
 export const metadata: Metadata = {
   title: "Preparing for Your Golden Retriever Puppy: Complete Checklist",
@@ -308,6 +309,9 @@ export default function PreparingForPuppyPage() {
               </p>
             </div>
           </section>
+
+          {/* Share */}
+          <ShareButtons title="Preparing for Your Golden Retriever Puppy: Complete Checklist" path="/learn/preparing-for-your-puppy" />
 
           {/* CTA */}
           <section className="bg-card border border-gold/20 rounded-2xl p-8 sm:p-12 text-center">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
 import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
+import { ShareButtons } from "@/components/share-buttons";
 
 export const metadata: Metadata = {
   title: "English Cream vs American Golden Retriever: What's the Difference?",
@@ -280,6 +281,9 @@ export default function EnglishCreamVsAmericanPage() {
               </p>
             </div>
           </section>
+
+          {/* Share */}
+          <ShareButtons title="English Cream vs American Golden Retriever" path="/learn/english-cream-vs-american-golden" />
 
           {/* CTA */}
           <section className="bg-card border border-gold/20 rounded-2xl p-8 sm:p-12 text-center">
